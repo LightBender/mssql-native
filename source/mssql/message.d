@@ -31,7 +31,7 @@ public class message
 	@property immutable messageType type() { return _type; }
 	@property immutable (packet)[] packets() { return _packets; }
 
-	this(byte[] data, messageType type, ushort maxPacketLen) immutable pure
+	public this(byte[] data, messageType type, ushort maxPacketLen) immutable pure
 	{
 		int packetDataLen = maxPacketLen - 8;
 
@@ -49,15 +49,15 @@ public class packet
 	private immutable byte _packetId;
 	private immutable byte _window;
 
-	@property immutable (byte)[] data() { return _data; }
-	@property immutable messageType type() { return _type; }
-	@property immutable packetStatus status() { return _status; }
-	@property immutable ushort length() { return _length; }
-	@property immutable ushort spid() { return _spid; }
-	@property immutable byte packetId() { return _packetId; }
-	@property immutable byte window() { return _window; }
+	public @property immutable (byte)[] data() { return _data; }
+	public @property immutable messageType type() { return _type; }
+	public @property immutable packetStatus status() { return _status; }
+	public @property immutable ushort length() { return _length; }
+	public @property immutable ushort spid() { return _spid; }
+	public @property immutable byte packetId() { return _packetId; }
+	public @property immutable byte window() { return _window; }
 
-	this(byte[] data, messageType type, packetStatus status, ushort length, byte packetId, ushort spid = 0, byte window = 0x00) immutable pure
+	public this(byte[] data, messageType type, packetStatus status, ushort length, byte packetId, ushort spid = 0, byte window = 0x00) immutable pure
 	{
 		_data = data.idup;
 		_type = type;

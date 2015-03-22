@@ -9,3 +9,5 @@ __dummy.html
 *.lib
 *.dll
 *.exe
+
+*.userprefs
