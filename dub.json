@@ -1,0 +1,18 @@
+{
+	"name": "mssql-native",
+	"description": "A native Tabular Data Stream (MSSQL) driver implementation for D.",
+	"license": "BSL-1.0",
+	"copyright": "Copyright (c) 2015 Adam Wilson",
+	"authors": [
+		"Adam Wilson"
+	],
+	"dependencies": {
+		"vibe-d": {"version": ">=0.7.22", "optional": false}
+	},
+	"configurations": [
+	 	{
+			"name": "library",
+	 		"targetType": "staticLibrary",
+		}
+	]
+}
