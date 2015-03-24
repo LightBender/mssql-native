@@ -1,5 +1,8 @@
 ﻿module mssql.message;
 
+import std.algorithm;
+import std.bitmanip;
+
 public enum messageType : byte 
 {
 	Batch = 1,
@@ -26,40 +29,63 @@ public enum packetStatus : byte
 public class message
 {
 	private immutable messageType _type;
-	private immutable (packet)[] _packets;
+	private packet[] _packets;
 
-	@property immutable messageType type() { return _type; }
-	@property immutable (packet)[] packets() { return _packets; }
+	@property immutable messageType type() pure { return _type; }
+	@property packet[] packets() pure { return _packets; }
 
-	public this(byte[] data, messageType type, ushort maxPacketLen) immutable pure
+	public this(ubyte[] data, messageType type, ushort maxPacketLen) pure
 	{
 		int packetDataLen = maxPacketLen - 8;
-
 		_type = type;
+
+		if((data.length+8) <= maxPacketLen)
+			_packets ~= new packet(data[0..data.length], type, packetStatus.Normal, cast(ushort)data.length, cast(ubyte)0);
+		else
+		{
+			int count = 0;
+			int pos = 0;
+			bool more = true;
+			while(more)
+			{
+				_packets ~= new packet(data[pos..pos+packetDataLen], type, packetStatus.Normal, cast(ushort)packetDataLen, cast(ubyte)count++);
+				pos += packetDataLen;
+				if((pos+packetDataLen) >= data.length) more = false;
+			}
+			_packets ~= new packet(data[pos..data.length], type, packetStatus.Normal, cast(ushort)(data.length-pos), cast(ubyte)count);
+		}
 	}
 }
 
 public class packet
 {
-	private immutable (byte)[] _data;
+	private ubyte[] _data;
 	private immutable messageType _type;
 	private immutable packetStatus _status;
 	private immutable ushort _length;
 	private immutable ushort _spid;
-	private immutable byte _packetId;
-	private immutable byte _window;
+	private immutable ubyte _packetId;
+	private immutable ubyte _window;
 
-	public @property immutable (byte)[] data() { return _data; }
-	public @property immutable messageType type() { return _type; }
-	public @property immutable packetStatus status() { return _status; }
-	public @property immutable ushort length() { return _length; }
-	public @property immutable ushort spid() { return _spid; }
-	public @property immutable byte packetId() { return _packetId; }
-	public @property immutable byte window() { return _window; }
+	public @property ubyte[] data() pure { return _data; }
+	public @property immutable messageType type() pure { return _type; }
+	public @property immutable packetStatus status() pure { return _status; }
+	public @property immutable ushort length() pure { return _length; }
+	public @property immutable ushort spid() pure { return _spid; }
+	public @property immutable ubyte packetId() pure { return _packetId; }
+	public @property immutable ubyte window() pure { return _window; }
 
-	public this(byte[] data, messageType type, packetStatus status, ushort length, byte packetId, ushort spid = 0, byte window = 0x00) immutable pure
+	public this(ubyte[] data, messageType type, packetStatus status, ushort length, ubyte packetId, ushort spid = 0, ubyte window = 0x00) pure
 	{
-		_data = data.idup;
+		_data.length = length + 8;
+		_data[0] = type;
+		_data[1] = status;
+		_data[2..3].write!ushort(length, 0);
+		_data[4..5].write!ushort(spid, 0);
+		_data[6] = packetId;
+		_data[7] = window;
+		_data[8..length+8] = data.dup[0..length];
+
 		_type = type;
 		_status = status;
 		_length = length;
